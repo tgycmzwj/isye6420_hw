@@ -1,0 +1,52 @@
+This is BibTeX, Version 0.99d (TeX Live 2019)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: document.aux
+The style file: unsrtnat.bst
+Illegal, another \bibstyle command---line 35 of file document.aux
+ : \bibstyle
+ :          {apalike}
+I'm skipping whatever remains of this command
+Database file #1: document.bib
+Warning--can't use both volume and number fields in williams2006gaussian
+You've used 4 entries,
+            2481 wiz_defined-function locations,
+            579 strings with 5053 characters,
+and the built_in function-call counts, 1521 in all, are:
+= -- 130
+> -- 64
+< -- 4
++ -- 26
+- -- 18
+* -- 121
+:= -- 242
+add.period$ -- 12
+call.type$ -- 4
+change.case$ -- 7
+chr.to.int$ -- 4
+cite$ -- 5
+duplicate$ -- 76
+empty$ -- 144
+format.name$ -- 26
+if$ -- 315
+int.to.chr$ -- 1
+int.to.str$ -- 5
+missing$ -- 5
+newline$ -- 28
+num.names$ -- 12
+pop$ -- 31
+preamble$ -- 1
+purify$ -- 4
+quote$ -- 0
+skip$ -- 46
+stack$ -- 0
+substring$ -- 80
+swap$ -- 10
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 25
+warning$ -- 1
+while$ -- 14
+width$ -- 0
+write$ -- 59
+(There was 1 error message)

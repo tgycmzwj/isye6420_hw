@@ -1,0 +1,106 @@
+\documentclass{homeworg}
+\usepackage{threeparttable}
+\usepackage{lscape}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{subfigure}
+\usepackage{booktabs}
+
+\title{Bayesian Statistics HW-3}
+\author{Weijia Zhao}
+
+
+
+\begin{document}
+\maketitle
+
+\exercise 
+\textbf{Traffic} \\
+X the number of accidents in a 3 month period. $[X|\theta]\sim \emph{Poi}(\theta)$ with $\pi(\theta)=\frac{1}{\sqrt{\theta}}\mathbb{I}(0<\theta<\infty)$. Observed realization of X: 1,2,0,1\\
+(a) The maximum likelihood estimator of X is given by 
+\begin{align*}
+\hat{\theta}_{MLE}=\bar{X}=\frac{1+2+0+1}{4}=1
+\end{align*}
+Since $[X|\theta]\sim \emph{Poi}(\theta)$, we have $f(x|\theta)=\frac{\theta^xe^{-\lambda}}{x!}$, the posterior distribution is given by
+\begin{align*}
+\pi(\theta|\{x_i\}_{i=1}^4)&\propto f(\{x_i\}_{i=1}^4|\theta)*\pi(\theta)\\
+&=\Pi_{i=1}^4f(x_i|\theta)*\pi(\theta)\\
+&=\Pi_{i=1}^4 \frac{\theta^{x_i}e^{-\theta}}{x_i!} * \frac{1}{\sqrt{\theta}}\\
+&\propto \theta^{\sum_{i=1}^{4}x_i-\frac{1}{2}}e^{-4\theta}
+\end{align*}
+This posterior distribution has the kernel of Gamma distribution with $\alpha-1=\sum_{i=1}^{4}x_i-\frac{1}{2}$ and $\beta=4$, thus $\alpha=\frac{1}{2}+\sum_{i=1}^{4}x_i$ and $\beta=4$, thus the posterior distribution is given by $\pi(\theta|\{x_i\}_{i=1}^4)\sim Gamma(\frac{1}{2}+\sum_{i=1}^{4}x_i,4)$. Thus the Bayes estimator for $\theta$ is given by $\theta_{Bayes}=\frac{\alpha}{\beta}=\frac{\frac{1}{2}+\sum_{i=1}^{4}x_i}{4}=\frac{9}{8}$
+
+(b) For 95\% equitailed credible set, let $F(x)$ denote the cumulative distribution of $Gamma(\frac{9}{2},4)$, then we have $F(\theta_{L})=0.025$ and $F(\theta_{H})=0.975$. Using CDF function in scipy (note that in scipy.stats.gamma, $a=\alpha$, $loc=0$, $scale=\frac{1}{\beta}$), we get that $\theta_{L}=0.337549$ and $\theta_{H}=2.377846$ 
+
+(c) For HPD creditble set, let $f(x)$ denote the probability distribution (pdf) of $Gamma(\frac{9}{2},4)$. Since gamma distribution is unimodal we want to find $\theta_{L}$ and $\theta_{H}$ such that $f(\theta_{L})=f(\theta_{H})$ and $F(\theta_{H})-F(\theta_{L})=0.95$, solve the system of equation in scipy, we get that $\theta_{L}=0.237823$, $\theta_{H}=2.174033$ (may have small round errors as the solutions are found numerically)
+
+(d) The mode of the posterior distribution $\theta_{Mode}=\arg\max f(x)$ where $f(x)$ is the probability distribution (pdf) of $Gamma(\frac{9}{2},4)$, solve the optimization problem we have $\theta_{MAP}=0.875000$ (this is consistent with the fact that mode of gamma distribution is give by $\frac{\alpha-1}{\beta}$)
+
+(e) The posterior odds is given by $\frac{P_0}{P_1}=\frac{1-F(1)}{F(1)}=\frac{0.534146}{0.465854}=1.146596$, thus the $H_0$ hypothesis is favored based on posterior
+
+
+\exercise
+\textbf{Lady Guessing Coin Flips}\\
+Fair coin flipped 16 times and lady correctly predicts the outcome 15 times. $p$ the probability of the lady guessing correctly with $H_0: p=0.5$, $H_1: P>0.5$. Prior on $p$ given by
+\begin{align*}
+\pi(p)=\pi_0\delta_{0.5}+\pi_1\mathbb{U}(0.5,1)=0.95\delta_{0.5}+0.05*2*\mathbb{I}(0.5<p<1)
+\end{align*}
+Prior $P(H_0)=\pi_0=0.95$, $P(H_1)=\pi_1=1-\pi_0=0.05$
+
+(a) Given the prior, we know that 
+\begin{align*}
+m(x)=\pi_0*f(x|p_0)+\pi_1*m_1(x)
+\end{align*}
+Where 
+\begin{align*}
+f(x|p)=\frac{16!}{x!(16-x)!}*p^x*(1-p)^{16-x}=\frac{\Gamma(17)}{\Gamma(x+1)\Gamma(17-x)}*p^x*(1-p)^{16-x}
+\end{align*} 
+where the second equal sign follows the definition of Gamma function $\Gamma(1)=0!$, $\Gamma(x+1)=x*\Gamma(x)$, substitute $p_0=0.5$ we get 
+\begin{align*}
+f(x|p_0)=\frac{16!}{x!(16-x)!}*0.5^{16}=\frac{\Gamma(17)}{\Gamma(x+1)\Gamma(17-x)}*0.5^{16}
+\end{align*}
+For term $m_1(x)$, we have
+\begin{align*}
+m_1(x)&=\int_{p>0.5}f(x|p)\xi (p) dp \\
+&=\int_{0.5}^{1} \frac{16!}{x!(16-x)!} p^{x}*(1-p)^{16-x}*2dp\\
+&=\frac{\Gamma(17)}{\Gamma(x+1)\Gamma(17-x)}*2*\int_{0.5}^{1}p^{x}*(1-p)^{16-x}dp\\
+&=\frac{\Gamma(17)}{\Gamma(x+1)\Gamma(17-x)}*2*(B(1;x+1,17-x)-B(0.5;x+1,17-x))
+\end{align*}
+following the definition of incomplete Beta function $B(x;a,b)=\int_{0}^{x}t^{a-1}(1-t)^{b-1}dt$. Thus the posterior probability
+\begin{align*}
+p_0&=P(H_0|X)=[1+\frac{\pi_1}{\pi_0}*\frac{m_1(x)}{f(x|p_0)}]^{-1}\\
+&=[1+\frac{0.05}{0.95}*\frac{\frac{\Gamma(17)}{\Gamma(x+1)\Gamma(17-x)}*2*(B(1;x+1,17-x)-B(0.5;x+1,17-x))}{\frac{\Gamma(17)}{\Gamma(x+1)\Gamma(17-x)}*0.5^{16}}]^{-1}\\
+&=[1+\frac{2^{17}}{19}*[B(1;x+1,17-x)-B(0.5;x+1,17-x)]]^{-1}\\
+&=[1+\frac{2^{17}}{19}*\int_{0.5}^{1}p^{x}*(1-p)^{16-x}dp]^{-1}
+\end{align*}
+Substitute x with $x=15$ since the lady correctly predicts the outcome 15 times, \emph{Note that this function can actually be integrated in close form, so we do not really have to integrate numerically. If you are doing it numerically, there might be small rounding errors. In addition, I avoid rounding in intermediate steps, for example, for the calculation of $B_{01}$, I directly use the precise value of $p_0$ rather than the 0.0379381 value, which is subject to rounding errors.} we have 
+\begin{align*}
+p_0&=[1+\frac{2^{17}}{19}*\int_{0.5}^{1}p^{15}*(1-p)dp]^{-1}\\
+&=[1+\frac{2^{17}}{19}\{(\frac{p^{16}}{16}-\frac{p^{17}}{17})\}_{0.5}^1]^{-1}\\
+&=[1+\frac{2^{17}}{19}[(\frac{1}{16}-\frac{1}{17})-(\frac{0.5^{16}}{16}-\frac{0.5^{17}}{17})]]^{-1}\\
+&=0.0379381
+\end{align*}
+So $p_1=1-p_0=0.962062$, the Bayes factor (in favor of $H_0$, against $H_1$) is given by $B_{01}=\frac{p_0/p_1}{\pi_0/\pi_1}=\frac{0.0379381/0.962062}{0.95/0.05}=0.00207548$, the Bayes factor (in factor of $H_1$, against $H_0$) is given by $B_{10}=\frac{1}{B_{01}}=481.816176$
+
+(b) since $\log_{10}B_{10}=2.68288>2$, there is decisive evidence against $H_0$ and in favor of $H_1$
+%\setlength\bibsep{0pt}
+%\bibliographystyle{apalike}
+%\bibliography{hw1}
+
+
+%\lstinputlisting[language=Python]{replication.py}
+%\lstinputlisting[]{Untitled.do}
+\newpage
+\textbf{Appendix}
+\lstinputlisting[language=python]{main.py}
+
+\end{document}
+
+
+
+
+
+
+
+

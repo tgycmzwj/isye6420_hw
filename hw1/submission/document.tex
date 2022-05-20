@@ -1,0 +1,152 @@
+\documentclass{homeworg}
+\usepackage{threeparttable}
+\usepackage{lscape}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{subfigure}
+\usepackage{booktabs}
+
+\title{Bayesian Statistics HW-1}
+\author{Weijia Zhao}
+
+
+
+\begin{document}
+\maketitle
+
+\textbf{Caution:} I keep 6 decimal digits for infinite decimals.
+
+\exercise 
+\textbf{Carpal Tunnel Syndrome Tests} \\
+Notice that the question expression is a bit vague. Here I believe that for Tinel, Phalen, NCV tests, the sensitivity is (0.97,0.92,0.93) respectively and the specificity is (0.92,0.88,0.87) respectively. \vspace{0.2em}
+
+By definition, sensitivity is the probability that a test is positive conditional on the presence of the syndrome, specificity is the probability that a test is negative conditional on the absence of the syndrome, positive predictive value (PVV) is the probability that the case has syndrome conditional on a positive testing result
+\begin{equation*}
+\text{sensitivity}=\frac{TP}{TP+FN}=\frac{TP}{nD}
+\end{equation*}
+\begin{equation*}
+\text{specificity}=\frac{TN}{FP+TN}=\frac{TN}{nC}
+\end{equation*}
+\begin{equation*}
+\text{PPV}=\frac{TP}{TP+FP}=\frac{TP}{nP}
+\end{equation*}
+(a) In serial manner, we only declare positive if all the three tests give positive results. For a case with syndrome (i.e. True), the probability that all tests are positive is given by 
+\begin{equation*}
+\mathbb{P}_{\text{Serial}}(P|D)=\mathbb{P}_{\text{Tinel}}(P|D)*\mathbb{P}_{\text{Phalen}}(P|D)*\mathbb{P}_{\text{NCV}}(P|D)=0.97*0.92*0.93=0.829932
+\end{equation*}
+For a case without syndrome (i.e. False), the probability that at least one test is negative is given by 
+\begin{align*}
+\mathbb{P}_{\text{Serial}}(N|C)&=1-\mathbb{P}_{\text{Serial}}(P|C)\\
+&1-\mathbb{P}_{\text{Tinel}}(P|C)*\mathbb{P}_{\text{Phalen}}(P|C)*\mathbb{P}_{\text{NCV}}(P|C)\\
+&1-(1-\mathbb{P}_{\text{Tinel}}(N|C))*(1-\mathbb{P}_{\text{Phalen}}(N|C))*(1-\mathbb{P}_{\text{NCV}}(N|C))\\
+&=1-(1-0.91)*(1-0.88)*(1-0.87)=0.998596
+\end{align*}
+
+Thus sensitivity and specificity are 0.829993 and 0.998596 respectively
+
+(b) In parallel manner, we declare positive if at least one of the three tests gives positive result. For a case with syndrome (i.e. True), the probability that at least one test is positive is given by
+\begin{align*}
+\mathbb{P}_{\text{Parallel}}(P|D)&=1-\mathbb{P}_{\text{Parallel}}(N|D)\\
+&=1-\mathbb{P}_{\text{Tinel}}(N|D)*\mathbb{P}_{\text{Phalen}}(N|D)*\mathbb{P}_{\text{NCV}}(N|D)\\
+&=1-(1-\mathbb{P}_{\text{Tinel}}(P|D))*(1-\mathbb{P}_{\text{Phalen}}(P|D))*(1-\mathbb{P}_{\text{NCV}}(P|D))\\
+&=1-(1-0.97)*(1-0.92)*(1-0.93)=0.999832
+\end{align*}
+For a case without syndrome (i.e. False), the probability that all tests are negative is given by 
+\begin{align*}
+\mathbb{P}_{\text{Parallel}}(N|C)&=\mathbb{P}_{\text{Tinel}}(N|C)*\mathbb{P}_{\text{Phalen}}(N|C)*\mathbb{P}_{\text{NCV}}(N|C)=0.91*0.88*0.87=0.696696
+\end{align*}
+Thus the sensitivity and specificity are 0.999832 and 0.696696 respectively
+
+(c) We know $\mathbb{P}(D)=\frac{50}{1000}=0.05$ and $\mathbb{P}(C)=1-\frac{50}{1000}=0.95$ \\
+
+For serial test
+\begin{align*}
+PPV&=\frac{\mathbb{P}(D)*\mathbb{P}_{\text{Serial}}(P|D)}{\mathbb{P}(D)*\mathbb{P}_{\text{Serial}}(P|D)+\mathbb{P}(C)*\mathbb{P}_{\text{Serial}}(P|C)}\\
+&=\frac{0.05*0.829932}{0.05*0.829932+0.95*(1-0.998596)}=0.968859
+\end{align*}
+
+For parallel test
+\begin{align*}
+PPV&=\frac{\mathbb{P}(D)*\mathbb{P}_{\text{Parallel}}(P|D)}{\mathbb{P}(D)*\mathbb{P}_{\text{Parallel}}(P|D)+\mathbb{P}(C)*\mathbb{P}_{\text{Parallel}}(P|C)}\\
+&=\frac{0.05*0.999832}{0.05*0.999832+0.95*(1-0.696696)}=0.147847
+\end{align*}
+
+Thus the PPV for the test in (a) and (b) are 0.968859 and 0.147847 respectively.
+
+
+\exercise 
+\textbf{A Simple Naive Bayes Classifier: 6420 Students going to Beach} \\
+We first grab some summary statistics from the table: \\
+Raw probabilities (``Midterm" for ``Satisfied with Midterm Results", ``Finances" for ``Personal finances good", ``Forecast" for ``Weather forecast good", ``Gender" for ``Female"):
+\begin{align*}
+\mathbb{P}(\text{Beach=1})&=\frac{40}{100}=0.4\\
+\mathbb{P}(\text{Midterm=1})&=\frac{62}{100}=0.62\\
+\mathbb{P}(\text{Finances=1})&=\frac{54}{100}=0.54\\
+\mathbb{P}(\text{Friends=1})&=\frac{38}{100}=0.38\\
+\mathbb{P}(\text{Forecast=1})&=\frac{76}{100}=0.76\\
+\mathbb{P}(\text{Gender=1})&=\frac{32}{100}=0.32
+\end{align*}
+Conditional Probabilities
+\begin{align*}
+\mathbb{P}(\text{Midterm=1}|\text{Beach=1})=\frac{35}{40} &, \mathbb{P}(\text{Midterm=1}|\text{Beach=0})=\frac{27}{60} \\
+\mathbb{P}(\text{Finances=1}|\text{Beach=1})=\frac{29}{40} &, \mathbb{P}(\text{Finances=1}|\text{Beach=0})=\frac{25}{60} \\
+\mathbb{P}(\text{Friends=1}|\text{Beach=1})=\frac{31}{40} &, \mathbb{P}(\text{Friends=1}|\text{Beach=0})=\frac{7}{60} \\
+\mathbb{P}(\text{Forecast=1}|\text{Beach=1})=\frac{33}{40} &, \mathbb{P}(\text{Forecast=1}|\text{Beach=0})=\frac{43}{60} \\
+\mathbb{P}(\text{Gender=1}|\text{Beach=1})=\frac{9}{40} &, \mathbb{P}(\text{Gender=1}|\text{Beach=0})=\frac{23}{60} \\
+\end{align*}
+
+(a) For Michael,
+\begin{align*}
+\mathbb{P}(\text{Beach})&=\frac{(1-\frac{35}{40})*(1-\frac{29}{40})*(\frac{31}{40})*(\frac{33}{40})*(1-\frac{9}{40})*0.4}{(1-\frac{35}{40})*(1-\frac{29}{40}))*(\frac{31}{40})*(\frac{33}{40})*(1-\frac{9}{40})*0.4+(1-\frac{27}{60})*(1-\frac{25}{60})*(\frac{7}{60})*(\frac{43}{60})*(1-\frac{23}{60})*0.6}\\
+&=0.407042
+\end{align*}
+\begin{align*}
+\mathbb{P}(\text{NoBeach})& =1-\mathbb{P}(\text{Beach})=0.592958\\
+\end{align*}
+So naive Bayes assigns the probability of 0.592958 of class ``not going to beach" to Michael.
+
+Note that I stack all the calculations in one single equation to avoid rounding errors. But similar to the example given, $\text{pbpropto}=(1-\frac{35}{40})*(1-\frac{29}{40})*(\frac{31}{40})*(\frac{33}{40})*(1-\frac{9}{40})*0.4$, $\text{pnbpropto}=(1-\frac{27}{60})*(1-\frac{25}{60})*(\frac{7}{60})*(\frac{43}{60})*(1-\frac{23}{60})*0.6$, and $\text{pbeach}=\frac{\text{pbpropto}}{\text{pbpropto+pnbpropto}}$
+
+(b) For Melissa
+\begin{align*}
+\mathbb{P}(\text{Beach})&=\frac{(\frac{35}{40})*(\frac{29}{40})*(1-\frac{31}{40})*(\frac{33}{40})*(\frac{9}{40})*0.4}{(\frac{35}{40})*(\frac{29}{40})*(1-\frac{31}{40})*(\frac{33}{40})*(\frac{9}{40})*0.4+(\frac{27}{60})*(\frac{25}{60})*(1-\frac{7}{60})*(\frac{43}{60})*(\frac{23}{60})*0.6}\\
+&=0.279642
+\end{align*}
+\begin{align*}
+\mathbb{P}(\text{NoBeach})& =1-\mathbb{P}(\text{Beach})=0.720358\\
+\end{align*}
+So naive Bayes assigns the probability of 0.592958 of class ``not going to beach" to Melissa. Again, we can instead break up the long equation into pieces similar to (a).
+
+\exercise 
+\textbf{Multiple Choice Exam} \\
+
+(a) Note that when the student knows the correct answer, the probability that (s)he answers it correctly is 1. The probability that one question is answered correctly is
+\begin{align*}
+P1=\mathbb{P}(\text{Known})+\mathbb{P}(\text{Unknown})*\mathbb{P}(\text{Correct}|\text{Unknown})=0.8+0.2*0.25=0.85
+\end{align*}
+Since two questions are independent, the probability that both questions will be answered correctly is $\mathbb{P}(\text{Correct})=P1*P1=0.7225$\\
+
+(b) The probability that the student really knew the correct answer conditional on answered correctly is given by 
+\begin{align*}
+\mathbb{P}(\text{Known}|\text{Correct})=\frac{\mathbb{P}(\text{Known \& Correct})}{\mathbb{P}(\text{Correct})}=\frac{\mathbb{P}(\text{Known})}{\mathbb{P}(\text{Correct})}=\frac{0.8*0.8}{0.7225}=0.885813
+\end{align*}
+
+(c) When there are n independent questions, the probability that the student answers all of them correctly is given by $0.85^{n}$, the probability that the student really knew the answer to all questions is given by $\frac{0.8^n}{0.85^n}=(\frac{16}{17})^n$. Both quantities go to 0 if $n\to\infty$
+%\setlength\bibsep{0pt}
+%\bibliographystyle{apalike}
+%\bibliography{hw1}
+
+
+%\lstinputlisting[language=Python]{replication.py}
+%\lstinputlisting[]{Untitled.do}
+
+\end{document}
+
+
+
+
+
+
+
+

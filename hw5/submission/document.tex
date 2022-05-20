@@ -1,0 +1,130 @@
+\documentclass{homeworg}
+\usepackage{threeparttable}
+\usepackage{lscape}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{subfigure}
+\usepackage{booktabs}
+
+\title{Bayesian Statistics HW-5}
+\author{Weijia Zhao}
+
+
+
+\begin{document}
+\maketitle
+
+\textbf{Caution:} I keep 6 decimal digits for infinite decimals.
+
+\exercise 
+\textbf{Blood Volume in Infants} \\
+The data for 16 babies in whom the cord was clamped early the total blood are given by 
+\begin{align*}
+D_1=\{13.8,8.0,8.4,8.8,9.6,9.8,8.2,8.0,10.3,8.5,11.5,8.2,8.9,9.4,10.3,12.6\}
+\end{align*}
+The data for 16 babies in whom the cord was not clamped until the placenta began to descend are given by 
+\begin{align*}
+D_2=\{10.4,13.1,11.4,9.0,11.9,16.2,14.0,8.2,13.0,8.8,14.9,12.2,11.2,13.9,13.4,11.9\}
+\end{align*}
+Assume gamma likelihoods with different shape/rate parameters for two procedures and assume $Gamma(0.001,0.001)$ prior distribution for both shape and rate.
+
+For both procedures, we denote the data to be $\{x_i\}_{i=1}^n$ where $n=16$. The likelihood is given by $x_i|(\alpha,\beta)\sim Gamma(\alpha,\beta)$ where $\alpha \sim Gamma(\alpha_1=0.001,\beta_1=0.001)$ and $\beta \sim Gamma(\alpha_2=0.001,\beta_2=0.001)$. Put everything in PyMC (2000 sample with 4 chains and burn in the first 1000 sample, note that the mean of Gamma distribution is given by $\alpha/\beta$, thus $mudiff=\alpha_1/\beta_1-\alpha_2/\beta_2$), we get the following results.
+
+As we can see, the 95\%  (HDI) credible set is given by $(-3.943,-0.949)$, does not contain 0
+\begin{table}[h]
+\caption{Q1 Results}
+	\begin{tabular}{llllllllll}
+		\hline \hline 
+		       & mean   & sd     & hdi\_2.5\% & hdi\_97.5\% & mcse\_mean & mcse\_sd & ess\_bulk & ess\_tail & r\_hat \\ \hline
+		alpha1 & 35.145 & 12.744 & 12.882     & 61.065      & 0.1        & 0.073    & 16400.0   & 18274.0   & 1.0    \\
+		beta1  & 3.644  & 1.33   & 1.304      & 6.332       & 0.01       & 0.008    & 16493.0   & 18567.0   & 1.0    \\
+		alpha2 & 27.78  & 10.141 & 9.843      & 47.677      & 0.102      & 0.092    & 14154.0   & 8065.0    & 1.0    \\
+		beta2  & 2.297  & 0.846  & 0.791      & 3.944       & 0.008      & 0.008    & 14131.0   & 8002.0    & 1.0    \\
+		mudiff & -2.462 & 0.753  & -3.943     & -0.949      & 0.003      & 0.002    & 79681.0   & 61062.0   & 1.0     \\ \hline\hline
+	\end{tabular}
+\end{table}
+
+\exercise 
+\textbf{Can Skull Variations in \emph{Canis lupus L} Predict Habitat?} \\
+We do the following regression (Note that a constant term is added, following the standard practice)
+\begin{align*}
+P(Location=Arctic)&=Logistics(\beta_0+\beta_1*gender+\beta_2*x3+\beta_3*x7)\\
+Logistics(y)&=\frac{e^y}{1+e^y}
+\end{align*}
+The prior distribution of $\beta$ is assumed to be $N(0,10^2)$ (independent) Again 4 chains with 20000 samples and 1000 burn in are used, the regression results are shown below. 
+
+\begin{table}[h]
+	\caption{Q2 Regression Results}
+	\begin{tabular}{llllllllll}
+		\hline \hline 
+		& mean    & sd    & hdi\_2.5\% & hdi\_97.5\% & mcse\_mean & mcse\_sd & ess\_bulk & ess\_tail & r\_hat \\ \hline 
+		beta{[}0{]} & -3.666  & 7.773 & -18.806    & 11.693      & 0.044      & 0.031    & 31713.0   & 38709.0   & 1.0    \\
+		beta{[}1{]} & 1.015   & 1.112 & -1.128     & 3.205       & 0.006      & 0.004    & 35918.0   & 39650.0   & 1.0    \\
+		beta{[}2{]} & 4.507   & 2.325 & -0.059     & 9.03        & 0.015      & 0.011    & 24459.0   & 32339.0   & 1.0    \\
+		beta{[}3{]} & -11.387 & 5.412 & -21.972    & -0.884      & 0.032      & 0.023    & 29196.0   & 35365.0   & 1.0   \\ \hline \hline
+	\end{tabular}
+\end{table}
+
+To make predictions, we sample regression coefficients from the posterior and calculate the corresponding $P(Location=Arctic)$ based on the formula above as well as the new record $gender=1, x_3 = 5.28, x_7 = 1.78$. For mean value we can take two approach that are equivalent asymptotically by LLN (by necessarily identical with finite sample), first is to directly take the mean of those resulted $P(Location=Arctic)$, second is to sample from Bernoulli distribution for actual outcome for each resulted $P(Location=Arctic)$  and then take average for these actual outcomes. The first approach yield more meaningful confidence set along the way (outcome in the second approach is discrete 0,1 so the credible set for actual outcome will only be [0,0] or [1,1] or [0,1] and the last one is the most likely one for a 95\% credible set). In addition, the second approach introduce one more layer of randomness and thus sampling error.  
+
+The prediction results is 0.6857915865803711 using the first approach (and 0.667 using the second approach they are really close, especially consider the small sample we have) (note PyMC recommend me not to sample over 25 observations and thus the results might be a bit volatile), the credible set for this likelihood is (0.3445759929714419, 0.923494935424825), the credible set for the actual outcome is (0,1)
+
+
+\exercise 
+\textbf{Micronuclei} \\
+The data provided is in tabular form and we first translate it into a table with three columns: the first column is constant, the second one is dose and the third one is micronuclei. (eg: the value 976 in upleft most cell means that we will have 976 rows with (dose=1,micronuclei=0) in our translated table).
+
+We run the following regression
+\begin{align*}
+E[Micronuclei|Dose]=Poisson(\lambda=e^{\beta_0+\beta_1*Dose})
+\end{align*}
+
+The prior distribution of $\beta$ is assumed to be $N(0,10^6)$ (independent) 4 chains with 3000 samples and 500 burn in are used, the regression results are shown below. 
+
+\begin{table}[h]
+	\caption{Q3 Regression Results}
+	\begin{tabular}{llllllllll}
+		\hline \hline
+		& mean   & sd    & hdi\_2.5\% & hdi\_97.5\% & mcse\_mean & mcse\_sd & ess\_bulk & ess\_tail & r\_hat \\ \hline
+		intercept  & -2.815 & 0.065 & -2.94      & -2.691      & 0.001      & 0.001    & 2282.0    & 2606.0    & 1.0    \\
+		coef\_dose & 0.671  & 0.02  & 0.633      & 0.71        & 0.0        & 0.0      & 2308.0    & 3000.0    & 1.0   \\ \hline \hline
+	\end{tabular}
+\end{table}
+
+The prediction is given by 0.626 (process exactly the same as Q2)
+\begin{table}[h]
+	\caption{Q3 Prediction Results}
+	\begin{tabular}{llllllllll}
+		\hline \hline 
+		& mean  & sd    & hdi\_2.5\% & hdi\_97.5\% & mcse\_mean & mcse\_sd & ess\_bulk & ess\_tail & r\_hat \\ \hline 
+		micro & 0.626 & 0.792 & 0.0        & 2.0         & 0.001      & 0.001    & 299854.0  & 298869.0  & 1.0   \\ \hline \hline 
+	\end{tabular}
+\end{table}
+This value seems to be reasonable as it is in between the sample mean for actual data when $Dose=3$ (sample mean is 0.556) and $Dose=4$ (sample mean is 0.778)
+
+%\setlength\bibsep{0pt}
+%\bibliographystyle{apalike}
+%\bibliography{hw1}
+
+
+\newpage
+\textbf{Q1 Code}
+\lstinputlisting[language=Python]{q1.py}
+\newpage
+\textbf{Q2 Code}
+\lstinputlisting[language=Python]{q2.py}
+\newpage
+\textbf{Q3 Code}
+\lstinputlisting[language=Python]{q3.py}
+%\lstinputlisting[]{Untitled.do}
+
+\end{document}
+
+
+
+
+
+
+
+
